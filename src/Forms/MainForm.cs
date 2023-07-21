@@ -14,6 +14,8 @@ using System.Runtime.InteropServices;
 using Quad64.src.Forms.ToolStripRenderer;
 using System.IO;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
+
 
 namespace Quad64
 {
@@ -997,16 +999,26 @@ namespace Quad64
             }
         }
 
-        private void selectLeveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //Console.WriteLine("Opening SelectLevelForm!");
-            SelectLevelForm newLevel = new SelectLevelForm(level.LevelID);
-            newLevel.ShowDialog();
-            if (newLevel.changeLevel)
-            {
-                switchLevel(newLevel.levelID);
-            }
-        }
+private void selectLeveToolStripMenuItem_Click(object sender, EventArgs e)
+{
+    SelectLevelForm form = new SelectLevelForm(level.LevelID);
+    form.ShowDialog();
+    if (form.changeLevel)
+    {
+        this.switchLevel(form.levelID);
+    }
+    this.DumpObjects("Dump_Objects", level.getCurrentArea().Objects);
+    this.DumpObjects("Dump_MacroObjects", level.getCurrentArea().MacroObjects);
+    this.DumpObjects("Dump_SpecialObjects", level.getCurrentArea().SpecialObjects);
+    if (!Directory.Exists("Dump_AreaModel"))
+    {
+        Directory.CreateDirectory("Dump_AreaModel");
+    }
+    level.getCurrentArea().AreaModel.dumpModelToCOLLADA(1f, null, $"Dump_AreaModel/{level.getCurrentArea().AreaID}");
+}
+
+ 
+
         
         private void testROMToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1017,6 +1029,12 @@ namespace Quad64
         private void rOMInfoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ROMInfoForm romInfo = new ROMInfoForm();
+            romInfo.ShowDialog();
+        }
+
+        private void objInfoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+                ROMInfoForm romInfo = new ROMInfoForm();
             romInfo.ShowDialog();
         }
 
@@ -2132,6 +2150,40 @@ namespace Quad64
             dropObjectToGround();
         }
         
+        private static string RemoveIllegalChars(string text)
+{
+    string str = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+    return new Regex($"[{Regex.Escape(str)}]").Replace(text, "");
+}
+
+
+
+        private void DumpObjects(string folder, List<Object3D> objects)
+{
+    if (!Directory.Exists(folder))
+    {
+        Directory.CreateDirectory(folder);
+    }
+    foreach (string str in Directory.GetDirectories(folder))
+    {
+        Directory.Delete(str);
+    }
+    foreach (string str2 in Directory.GetFiles(folder))
+    {
+        File.Delete(str2);
+    }
+    int num = 0;
+    foreach (Object3D objectd in objects)
+    {
+        if (level.ModelIDs.ContainsKey(objectd.ModelID))
+        {
+            level.ModelIDs[objectd.ModelID].dumpModelToCOLLADA(1f, objectd, $"{folder}/{RemoveIllegalChars(objectd.getObjectComboName())}__{num++}");
+        }
+    }
+}
+
+
+
         private void AreaButton_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = (ToolStripMenuItem)sender;

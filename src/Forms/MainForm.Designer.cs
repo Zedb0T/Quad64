@@ -66,6 +66,7 @@
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.themesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rOMInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.objInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.scriptsDumpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -398,6 +399,7 @@
             this.settingsToolStripMenuItem,
             this.themesToolStripMenuItem,
             this.rOMInfoToolStripMenuItem,
+            this.objInfoToolStripMenuItem,
             this.toolStripSeparator1,
             this.scriptsDumpToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
@@ -424,6 +426,11 @@
             this.rOMInfoToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.rOMInfoToolStripMenuItem.Text = "ROM Info";
             this.rOMInfoToolStripMenuItem.Click += new System.EventHandler(this.rOMInfoToolStripMenuItem_Click);
+            // 
+            this.objInfoToolStripMenuItem.Name = "rOMInfoToolStripMenuItem";
+            this.objInfoToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.objInfoToolStripMenuItem.Text = "Dump";
+            this.objInfoToolStripMenuItem.Click += new System.EventHandler(this.objInfoToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
@@ -993,6 +1000,7 @@
         private System.Windows.Forms.Label cameraSpeedLabel;
         private System.Windows.Forms.TrackBar trackBar_camSpeed;
         private System.Windows.Forms.ToolStripMenuItem rOMInfoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem objInfoToolStripMenuItem;
         private System.Windows.Forms.Button dropToGround;
         private System.Windows.Forms.CheckBox keepOnGround;
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;

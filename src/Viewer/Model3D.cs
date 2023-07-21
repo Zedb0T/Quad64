@@ -163,6 +163,8 @@ namespace Quad64
         
         public void drawModel(Vector3 scale, Quaternion rot, Vector3 pos)
         {
+
+           
             GL.PushMatrix();
             GL.Translate(pos.X, pos.Y, pos.Z);
             //GL.Translate(center.X, center.Y, center.Z);
@@ -211,12 +213,17 @@ namespace Quad64
             GL.DisableClientState(ArrayCap.TextureCoordArray);
             GL.DisableClientState(ArrayCap.ColorArray);
             GL.PopMatrix();
+            //dumpModelToOBJ ((float)1.0);
+            
         }
 
-        public void dumpModelToCOLLADA(float scale)
-        {
-            DumpModel.dumpModelToCOLLADA(this, scale);
-        }
+public void dumpModelToCOLLADA(float scale, Object3D obj, string name)
+{
+    DumpModel.dumpModelToCOLLADA(this, obj, scale, name);
+}
+
+ 
+
 
         public void dumpModelToOBJ(float scale)
         {
@@ -240,10 +247,12 @@ namespace Quad64
                 objMtl.Append("map_Kd Level/" + img_index + ".png" + Environment.NewLine);
                 img_index++;
             }
-
+            Console.WriteLine("Number of meshes: " + meshes.Count);
             for (int i = 0; i < meshes.Count; i++)
             {
                 MeshData m = meshes[i];
+
+                
                 if (m.vertices.Length < 1)
                     continue;
                 objModel.Append("usemtl Tex_" + i + Environment.NewLine);
@@ -270,7 +279,7 @@ namespace Quad64
                     int v1 = (int)m.indices[(j * 3) + 0] + index_offset;
                     int v2 = (int)m.indices[(j * 3) + 1] + index_offset;
                     int v3 = (int)m.indices[(j * 3) + 2] + index_offset;
-                    objModel.Append("f " + v1 + "/" + v1 + " " + v2 + "/" + v2 + " " + v3 + "/" + v3 + Environment.NewLine);
+                    objModel.Append("f " + v1 + "/" + v1 + " " + v2 + "/" + v2 + " " + v3 + "/" + v3 + "/" + Environment.NewLine);
 
                     largest_value = Math.Max(v1, largest_value);
                     largest_value = Math.Max(v2, largest_value);
@@ -278,8 +287,21 @@ namespace Quad64
                 }
                 index_offset = largest_value + 1;
             }
-            File.WriteAllText("Level.obj", objModel.ToString());
-            File.WriteAllText("Level.mtl", objMtl.ToString());
+        string objFileName = "Level.obj";
+        string mtlFileName = "Level.mtl";
+
+        // Check if the files already exist and append a number to the filenames if needed
+        int fileSuffix = 1;
+        while (File.Exists(objFileName) || File.Exists(mtlFileName))
+        {
+            objFileName = $"Level{fileSuffix}.obj";
+            mtlFileName = $"Level{fileSuffix}.mtl";
+            fileSuffix++;
+        }
+
+        // Write the objModel and objMtl strings to the files
+        File.WriteAllText(objFileName, objModel.ToString());
+        File.WriteAllText(mtlFileName, objMtl.ToString());
         }
 
     }

@@ -3,6 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace Quad64
 {
@@ -208,40 +213,35 @@ namespace Quad64
             return plist;
         }
 
-        public static library_geometries MakeGeometryLibrary(ref Model3D mdl)
+public static library_geometries MakeGeometryLibrary(ref Model3D mdl)
+{
+    library_geometries _geometries = new library_geometries();
+    ulong count = (ulong) mdl.builder.TextureImages.Count;
+    geometry geometry = new geometry();
+    geometry = new geometry {
+        id = "geometry"
+    };
+    mesh mesh = new mesh();
+    mesh.source = new source[] { makePositionsSource(ref mdl), makeTexCoordSource(ref mdl), makeColorSource(ref mdl) };
+    mesh.vertices = MakeVertices();
+    List<object> list = new List<object>();
+    uint num2 = 0;
+    ulong num3 = 0UL;
+    while (true)
+    {
+        if (num3 >= count)
         {
-            library_geometries lib_geo = new library_geometries();
-            //lib_geo.id = "lib_geo";
-            ulong len = (ulong)mdl.builder.TextureImages.Count;
-            
-            geometry geo = new geometry();
-
-            //for (ulong i = 0; i < len; i++)
-            //{
-            geo = new geometry();
-            geo.id = "geometry";
-            mesh m = new mesh();
-
-            m.source = new source[] {
-                makePositionsSource(ref mdl),
-                makeTexCoordSource(ref mdl),
-                makeColorSource(ref mdl)
-            };
-
-            m.vertices = MakeVertices();
-            List<object> polyLists = new List<object>();
-            uint indices_offset = 0;
-            for (ulong i = 0; i < len; i++)
-            {
-                polyLists.Add(MakePolyList(i, mdl.meshes[(int)i].indices, ref indices_offset));
-                //indices_offset += (uint)mdl.meshes[(int)i].indices.LongLength;
-            }
-            m.Items = polyLists.ToArray();
-            geo.Item = m;
-
-            lib_geo.geometry = new geometry[] { geo };
-            return lib_geo;
+            mesh.Items = list.ToArray();
+            geometry.Item = mesh;
+            _geometries.geometry = new geometry[] { geometry };
+            return _geometries;
         }
+        list.Add(MakePolyList(num3, mdl.meshes[(int) num3].indices, ref num2));
+        num3 += (ulong) 1L;
+    }
+}
+
+
 
         private static image MakeImage(ulong id_num, string modelName)
         {
@@ -251,17 +251,25 @@ namespace Quad64
             return img;
         }
 
-        private static library_images MakeImagesLibrary(ref Model3D mdl, string modelName)
+private static library_images MakeImagesLibrary(ref Model3D mdl, string folder)
+{
+    library_images _images = new library_images();
+    image[] imageArray = new image[mdl.builder.TextureImages.Count];
+    ulong num2 = 0UL;
+    while (true)
+    {
+        if (num2 >= (ulong) imageArray.Length)
         {
-            library_images lib_img = new library_images();
-            int len = mdl.builder.TextureImages.Count;
-            
-            image[] imgs = new image[len];
-            for (ulong i = 0; i < (ulong)imgs.LongLength; i++)
-                imgs[i] = MakeImage(i, modelName);
-            lib_img.image = imgs;
-            return lib_img;
+            _images.image = imageArray;
+            return _images;
         }
+        imageArray[(int) ((IntPtr) num2)] = MakeImage(num2, folder);
+        num2 += (ulong) 1L;
+    }
+}
+
+ 
+
         
         private static common_newparam_type MakeNewParamForEffect(ulong id_num, bool isSampler2D)
         {
@@ -319,44 +327,59 @@ namespace Quad64
             return eff;
         }
 
-        private static library_effects MakeEffectsLibrary(ref Model3D mdl, string modelName)
+private static library_effects MakeEffectsLibrary(ref Model3D mdl, string folder)
+{
+    library_effects _effects = new library_effects();
+    effect[] effectArray = new effect[mdl.builder.TextureImages.Count];
+    ulong num2 = 0UL;
+    while (true)
+    {
+        if (num2 >= (ulong) effectArray.Length)
         {
-            library_effects lib_eff = new library_effects();
-
-            int len = mdl.builder.TextureImages.Count;
-            
-            effect[] effects = new effect[len];
-            for (ulong i = 0; i < (ulong)effects.LongLength; i++)
-                effects[i] = MakeEffect(i);
-
-            lib_eff.effect = effects;
-            return lib_eff;
+            _effects.effect = effectArray;
+            return _effects;
         }
+        effectArray[(int) ((IntPtr) num2)] = MakeEffect(num2);
+        num2 += (ulong) 1L;
+    }
+}
 
-        private static material MakeMaterial(ulong id_num)
+ 
+
+private static material MakeMaterial(ulong id_num)
+{
+    material material = new material {
+        name = "Material_" + id_num.ToString(),
+        id = "material_" + id_num.ToString()
+    };
+    instance_effect _effect = new instance_effect {
+        url = "#effect_" + id_num.ToString()
+    };
+    material.instance_effect = _effect;
+    return material;
+}
+
+ 
+
+
+private static library_materials MakeMaterialsLibrary(ref Model3D mdl)
+{
+    library_materials _materials = new library_materials();
+    material[] materialArray = new material[mdl.builder.TextureImages.Count];
+    ulong num2 = 0UL;
+    while (true)
+    {
+        if (num2 >= (ulong) materialArray.Length)
         {
-            material mat = new material();
-            mat.name = "Material_" + id_num;
-            mat.id = "material_" + id_num;
-            instance_effect ieffect = new instance_effect();
-            ieffect.url = "#effect_" + id_num;
-            mat.instance_effect = ieffect;
-            return mat;
+            _materials.material = materialArray;
+            return _materials;
         }
+        materialArray[(int) ((IntPtr) num2)] = MakeMaterial(num2);
+        num2 += (ulong) 1L;
+    }
+}
 
-        private static library_materials MakeMaterialsLibrary(ref Model3D mdl)
-        {
-            library_materials lib_mats = new library_materials();
-
-            int len = mdl.builder.TextureImages.Count;
-            
-            material[] materials = new material[len];
-            for (ulong i = 0; i < (ulong)materials.LongLength; i++)
-                materials[i] = MakeMaterial(i);
-
-            lib_mats.material = materials;
-            return lib_mats;
-        }
+ 
 
         private static bind_material MakeBindedMaterial(ref Model3D mdl)
         {
@@ -373,74 +396,94 @@ namespace Quad64
             return bm;
         }
 
-        private static library_visual_scenes MakeVisualScenesLibrary(ref Model3D mdl)
-        {
-            library_visual_scenes lib_visuals = new library_visual_scenes();
-            visual_scene vs = new visual_scene();
-            vs.id = "scene";
-            node geo_node = new node();
-            geo_node.id = "node";
-            geo_node.name = "node";
-            geo_node.type = NodeType.NODE;
-            matrix transform_matrix = new matrix();
-            transform_matrix.Values = new double[] {
-                1, 0, 0, 0,
-                0, 0,-1, 0,
-                0, 1, 0, 0,
-                0, 0, 0, 1
-            };
-            geo_node.Items = new object[] {
-                transform_matrix
-            };
-            geo_node.ItemsElementName = new ItemsChoiceType2[] {
-                ItemsChoiceType2.matrix
-            };
-            transform_matrix.sid = "transform";
-            int len = mdl.builder.TextureImages.Count;
+        private static library_visual_scenes MakeVisualScenesLibrary(ref Model3D mdl, ref Matrix4 mat)
+{
+    library_visual_scenes _scenes = new library_visual_scenes();
+    visual_scene _scene = new visual_scene {
+        id = "scene"
+    };
+    node node = new node {
+        id = "node",
+        name = "node",
+        type = NodeType.NODE
+    };
+    matrix matrix = new matrix();
+    double[] numArray1 = new double[0x10];
+    numArray1[0] = mat.M11;
+    numArray1[1] = mat.M21;
+    numArray1[2] = mat.M31;
+    numArray1[3] = mat.M41;
+    numArray1[4] = mat.M12;
+    numArray1[5] = mat.M22;
+    numArray1[6] = mat.M32;
+    numArray1[7] = mat.M42;
+    numArray1[8] = mat.M13;
+    numArray1[9] = mat.M23;
+    numArray1[10] = mat.M33;
+    numArray1[11] = mat.M43;
+    numArray1[12] = mat.M14;
+    numArray1[13] = mat.M24;
+    numArray1[14] = mat.M34;
+    numArray1[15] = mat.M44;
+    matrix.Values = numArray1;
+    node.Items = new object[] { matrix };
+    node.ItemsElementName = new ItemsChoiceType2[] { ItemsChoiceType2.matrix };
+    matrix.sid = "transform";
+    int count = mdl.builder.TextureImages.Count;
+    instance_geometry _geometry = new instance_geometry {
+        url = "#geometry",
+        bind_material = MakeBindedMaterial(ref mdl)
+    };
+    node.instance_geometry = new instance_geometry[] { _geometry };
+    _scene.node = new node[] { node };
+    _scenes.visual_scene = new visual_scene[] { _scene };
+    return _scenes;
+}
 
-            instance_geometry geo = new instance_geometry();
-            geo.url = "#geometry";
-            geo.bind_material = MakeBindedMaterial(ref mdl);
-            
-            geo_node.instance_geometry = new instance_geometry[] { geo };
 
-            vs.node = new node[] { geo_node };
-            lib_visuals.visual_scene = new visual_scene[] { vs };
-            return lib_visuals;
-        }
 
-        private static void WriteAllTextures(List<Bitmap> textures, string modelName)
-        {
-            for(int img_index = 0; img_index < textures.Count; img_index++)
-            {
-                string filepath = Directory.GetCurrentDirectory() + "\\" + modelName + "\\" + img_index + ".png";
-                (new FileInfo(filepath)).Directory.Create();
-                textures[img_index].Save(filepath, System.Drawing.Imaging.ImageFormat.Png);
-            }
-        }
+        private static void WriteAllTextures(List<Bitmap> textures, string folder)
+{
+    for (int i = 0; i < textures.Count; i++)
+    {
+        string fileName = Path.Combine(folder, $"{i}.png");
+        new FileInfo(fileName).Directory.Create();
+        textures[i].Save(fileName, ImageFormat.Png);
+    }
+}
 
-        public static void dumpModelToCOLLADA(Model3D mdl, float scale)
-        {
-            _scale = scale;
-            COLLADA model = new COLLADA();
-            model.scene = new COLLADAScene();
-            model.scene.instance_visual_scene = new InstanceWithExtra();
-            model.scene.instance_visual_scene.url = "#scene";
-            model.asset = new asset();
-            model.asset.unit = new assetUnit();
-            model.asset.unit.meter = 1.0;
-            model.asset.unit.name = "meter";
-            model.asset.up_axis = UpAxisType.Z_UP;
+ 
 
-            model.Items = new object[] {
-                MakeImagesLibrary(ref mdl, "Test"),
-                MakeEffectsLibrary(ref mdl, "Test"),
-                MakeMaterialsLibrary(ref mdl),
-                MakeGeometryLibrary(ref mdl),
-                MakeVisualScenesLibrary(ref mdl)
-            };
-            WriteAllTextures(mdl.builder.TextureImages, "Test");
-            model.Save("Test.dae");
-        }
+
+        public static void dumpModelToCOLLADA(Model3D mdl, Object3D obj, float scale, string fileName)
+{
+    _scale = scale;
+    COLLADA collada = new COLLADA {
+        scene = new COLLADAScene()
+    };
+    collada.scene.instance_visual_scene = new InstanceWithExtra();
+    collada.scene.instance_visual_scene.url = "#scene";
+    collada.asset = new asset();
+    collada.asset.unit = new assetUnit();
+    collada.asset.unit.meter = 1.0;
+    collada.asset.unit.name = "meter";
+    collada.asset.up_axis = UpAxisType.Y_UP;
+    Matrix4 identity = Matrix4.Identity;
+    if (obj != null)
+    {
+        identity = Matrix4.CreateTranslation((float) obj.xPos, (float) obj.yPos, (float) obj.zPos);
+    }
+    fileName = fileName.Replace(" ", string.Empty);
+    string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetDirectoryName(fileName), Path.GetFileNameWithoutExtension(fileName) + "_tex");
+    if (!Directory.Exists(path))
+    {
+        Directory.CreateDirectory(path);
+    }
+    collada.Items = new object[] { MakeImagesLibrary(ref mdl, path), MakeEffectsLibrary(ref mdl, path), MakeMaterialsLibrary(ref mdl), MakeGeometryLibrary(ref mdl), MakeVisualScenesLibrary(ref mdl,  ref identity) };
+    WriteAllTextures(mdl.builder.TextureImages, path);
+    collada.Save(fileName + ".dae");
+}
+
+
     }
 }
